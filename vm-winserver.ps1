@@ -14,7 +14,7 @@ $nsg = 'nsg-vm'
 
 # Parameters - Credentials
 $user = 'adminuser'
-$pass = ConvertTo-SecureString '@BAHia011931' -AsPlainText -Force
+$pass = ConvertTo-SecureString 'Senha' -AsPlainText -Force
 $cred = New-Object System.Management.Automation.PSCredential($user, $pass);
 
 #Criar Resource Group
@@ -56,4 +56,16 @@ curl= 4.201.152.32
 # Alterar HTML no IIS Web Server
 Set-AzVMExtension -ResourceGroupName $rg -ExtensionName "IIS" -VMName $vm -Location $local -Publisher Microsoft.Compute `
   -ExtensionType CustomScriptExtension -TypeHandlerVersion 1.8 `
-  -SettingString '{"commandToExecute":"powershell Add-WindowsFeature Web-Server; powershell Add-Content -Path \"C:\\inetpub\\wwwroot\\Default.htm\" -Value $(env:computername)"}'
+  
+  Remove-AzVMExtension -ResourceGroupName $rg -VMName $vm -Name "IIS"
+
+  Set-AzVMExtension -ResourceGroupName $rg `
+  -ExtensionName "IIS-Setup" `
+  -VMName $vm `
+  -Location $local `
+  -Publisher "Microsoft.Compute" `
+  -ExtensionType "CustomScriptExtension" `
+  -TypeHandlerVersion "1.10" `
+  -Settings @{ "commandToExecute" = "powershell -ExecutionPolicy Unrestricted -Command Add-WindowsFeature Web-Server; Add-Content -Path 'C:\inetpub\wwwroot\Default.htm' -Value $env:COMPUTERNAME" } `
+  -ForceRerun (Get-Random)
+
